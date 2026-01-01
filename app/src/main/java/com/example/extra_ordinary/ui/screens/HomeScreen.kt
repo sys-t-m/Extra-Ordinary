@@ -1,41 +1,23 @@
 package com.example.extra_ordinary.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.filled.Wallet
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -47,11 +29,12 @@ import com.example.extra_ordinary.ui.components.CalendarView
 import com.example.extra_ordinary.ui.components.MonthYearPickerDialog
 import com.example.extra_ordinary.ui.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -59,6 +42,19 @@ fun HomeScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let { viewModel.importData(context, it) }
+    }
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/csv")
+    ) { uri ->
+        uri?.let { viewModel.exportToUri(context, it) }
+    }
 
     val initialPage = Int.MAX_VALUE / 2
     val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { Int.MAX_VALUE })
@@ -153,11 +149,26 @@ fun HomeScreen(
                     Icon(Icons.Filled.Edit, contentDescription = "Modifica paga oraria mensile")
                 }
             }
-            IconButton(onClick = { viewModel.toggleMoneyVisibility() }) {
-                Icon(
-                    if (state.moneyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                    contentDescription = if (state.moneyVisible) "Hide money" else "Show money"
-                )
+            Row {
+                IconButton(onClick = {
+                    importLauncher.launch(arrayOf("*/*"))
+                }) {
+                    Icon(Icons.Default.Download, contentDescription = "Import CSV")
+                }
+
+                IconButton(onClick = {
+                    val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+                    val fileName = "extraordinary_backup_${LocalDate.now().format(formatter)}.csv"
+                    exportLauncher.launch(fileName)
+                }) {
+                    Icon(Icons.Default.Upload, contentDescription = "Export CSV")
+                }
+                IconButton(onClick = { viewModel.toggleMoneyVisibility() }) {
+                    Icon(
+                        if (state.moneyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = if (state.moneyVisible) "Hide money" else "Show money"
+                    )
+                }
             }
         }
 

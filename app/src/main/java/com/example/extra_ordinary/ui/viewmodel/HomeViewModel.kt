@@ -1,11 +1,14 @@
 package com.example.extra_ordinary.ui.viewmodel
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.extra_ordinary.DataStore
 import com.example.extra_ordinary.data.model.WorkEntry
+import com.example.extra_ordinary.utils.CsvUtils
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +30,34 @@ class HomeViewModel(private val dataStore: DataStore) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    fun exportToUri(context: Context, uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val workEntries = dataStore.getAllWorkEntries()
+            val defaultRates = dataStore.getAllDefaultRates()
+            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                CsvUtils.writeCsvToStream(outputStream, workEntries, defaultRates)
+            }
+        }
+    }
+
+    fun importData(context: Context, uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                val backupData = CsvUtils.parseCsv(inputStream)
+                backupData.entries.forEach { (date, workEntry) ->
+                    dataStore.saveWorkEntry(date, workEntry)
+                }
+                backupData.defaultRates.forEach { (yearMonth, rate) ->
+                    dataStore.saveDefaultRate(yearMonth.monthValue - 1, yearMonth.year, rate.first, rate.second)
+                }
+            }
+            // Refresh UI on the main thread
+            launch {
+                loadDataForMonth(_uiState.value.currentMonth)
+            }
+        }
+    }
 
     fun loadDataForMonth(yearMonth: YearMonth) {
         viewModelScope.launch {
