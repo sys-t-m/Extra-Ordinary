@@ -1,13 +1,13 @@
 # Extra-ordinary
 
-Extra-ordinary is a work-tracking application for Android that provides a simple and elegant way to keep a log of your work hours. It features a home screen widget for quick access and a clean, modern interface based on Material Design 3.
+Extra-ordinary is a work-tracking application for Android that provides a simple and elegant way to keep a log of your extra work hours. It features a home screen widget for quick access and a clean, modern interface.
 
 ## Features
 
 *   **Work Tracking:** Easily log and view your work entries.
 *   **Home Screen Widget:** Access your work log directly from your home screen.
-*   **Material Design 3:** A clean and modern user interface with a sophisticated "Paper" aesthetic in light mode.
-*   **Customizable Themes:** Includes both a dark and a light theme to suit your preferences.
+*   **Modern UI:** A clean and modern user interface.
+*   **Light and Dark Themes:** Automatically adapts to the system's light or dark theme.
 
 ## Project Structure
 
