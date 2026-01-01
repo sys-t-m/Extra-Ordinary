@@ -1,32 +1,40 @@
-# Extra-ordinary
+# Extra-Ordinary
 
-Extra-ordinary is a work-tracking application for Android that provides a simple and elegant way to keep a log of your extra work hours. It features a home screen widget for quick access and a clean, modern interface.
+Extra-ordinary è un'applicazione Android progettata per tracciare le tue ore di lavoro extra in modo semplice ed elegante. Offre un registro pulito delle tue attività, calcoli automatici dei compensi e un'interfaccia moderna che si adatta alle tue preferenze.
 
-## Features
+## 📥 Download
+Scarica subito l'ultima versione installabile (APK) per il tuo telefono Android:
 
-*   **Work Tracking:** Easily log and view your work entries.
-*   **Home Screen Widget:** Access your work log directly from your home screen.
-*   **Modern UI:** A clean and modern user interface.
-*   **Light and Dark Themes:** Automatically adapts to the system's light or dark theme.
+👉 [**Scarica l'ultima versione dell'app**](https://github.com/sys-t-m/Extra-Ordinary/releases/latest)
 
-## Project Structure
+---
 
-The project follows the recommended Android app architecture, utilizing a Model-View-ViewModel (MVVM) pattern.
+## Funzionalità
 
-*   **`data`:** Contains the data layer of the application, including the `WorkEntry` model.
-*   **`ui`:** The UI layer, which includes screens, view models, and UI components.
-*   **`utils`:** Utility functions and helper classes.
-*   **`widget`:** Code for the home screen widget.
+* **📅 Gestione Ore:** Inserisci e visualizza facilmente le tue ore lavorate giorno per giorno.
+* **💰 Calcoli Automatici:** L'app calcola istantaneamente il totale delle ore e il compenso mensile basandosi sulla tua tariffa.
+* **📱 Widget Home Screen:** Aggiungi ore e guadagni della giornata odierna direttamente dalla schermata home, senza aprire l'app.
+* **👁️ Privacy Mode:** Nascondi gli importi economici con un tocco quando sei in pubblico.
+* **🎨 Temi Dinamici:** Interfaccia moderna che si adatta automaticamente al tema Chiaro o Scuro del sistema.
 
-## Getting Started
+## Struttura del Progetto
 
-To build and run the project, you will need:
+Il progetto segue l'architettura raccomandata per le app Android moderne, utilizzando il pattern **Model-View-ViewModel (MVVM)**.
 
-*   Android Studio
-*   An Android device or emulator
+* **`data`**: Contiene il data layer dell'applicazione, incluso il modello `WorkEntry`.
+* **`ui`**: Il layer dell'interfaccia utente, che include le schermate (`screens`), i `viewmodel` e i componenti UI riutilizzabili.
+* **`utils`**: Funzioni di utilità e classi helper (es. calcolo date e festività).
+* **`widget`**: Codice e logica per il widget della schermata home.
 
-Clone the repository and open it in Android Studio. The project can then be built and run on your device or emulator.
+## Per Iniziare (Sviluppo)
 
-## Contributing
+Per compilare ed eseguire il progetto in locale, avrai bisogno di:
 
-Contributions are welcome! Please feel free to submit a pull request or open an issue if you have any suggestions or find any bugs.
+* Android Studio
+* Un dispositivo Android o un emulatore
+
+Clona la repository e aprila in Android Studio. Il progetto potrà poi essere compilato ed eseguito sul tuo dispositivo o emulatore.
+
+## Contribuire
+
+I contributi sono benvenuti! Sentiti libero di inviare una pull request o aprire una "issue" se hai suggerimenti o se trovi dei bug.
