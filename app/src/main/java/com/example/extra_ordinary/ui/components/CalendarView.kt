@@ -117,7 +117,7 @@ fun CalendarView(
         ) {
             val emptyCells = (firstDayOfMonth.value - 1 + 7) % 7
             items(emptyCells) {
-                Box(modifier = Modifier.aspectRatio(0.6f))
+                Box(modifier = Modifier.aspectRatio(0.5f))
             }
 
             items(daysInMonth) { day ->
@@ -129,7 +129,7 @@ fun CalendarView(
 
                 Box(
                     modifier = Modifier
-                        .aspectRatio(0.6f)
+                        .aspectRatio(0.5f)
                         .clip(tileShape)
                         .background(
                             if (isToday) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
@@ -174,7 +174,7 @@ fun CalendarView(
                         val hasCurrency = hasTime && (rateEuros != 0 || rateCents != 0)
 
                         val timeString = if (hasTime) {
-                            workEntry?.let { if (it.minutes == 0) "${it.hours}h" else "${it.hours}:${it.minutes}" } ?: " "
+                            workEntry?.let { if (it.minutes == 0) "${it.hours}" else "${it.hours}:${it.minutes}" } ?: " "
                         } else {
                             " "
                         }
@@ -186,9 +186,9 @@ fun CalendarView(
                         )
                         if (moneyVisible && hasCurrency) {
                             val hourlyRateString = if (rateCents == 0) {
-                                "€$rateEuros/h"
+                                "€$rateEuros"
                             } else {
-                                "€$rateEuros,${String.format(Locale.getDefault(), "%02d", rateCents)}/h"
+                                "€$rateEuros,${String.format(Locale.getDefault(), "%02d", rateCents)}"
                             }
                             Text(
                                 text = hourlyRateString,
@@ -207,12 +207,13 @@ fun CalendarView(
 
                             val totalEurosForDay = totalCentsForDay / 100
                             val remainingCentsForDay = totalCentsForDay % 100
-                        // 4. Format Output
-                        val dailyTotalString = if (remainingCentsForDay == 0) {
-                            "€$totalEurosForDay"
-                        } else {
-                            "€$totalEurosForDay,${String.format(Locale.getDefault(), "%02d", remainingCentsForDay)}"
-                        }
+
+                            // 4. Format Output
+                            val dailyTotalString = if (remainingCentsForDay == 0) {
+                                "€$totalEurosForDay"
+                            } else {
+                                "€$totalEurosForDay,${String.format(Locale.getDefault(), "%02d", remainingCentsForDay)}"
+                            }
                         Text(
                             text = dailyTotalString,
                             fontSize = 11.sp,
@@ -227,7 +228,7 @@ fun CalendarView(
             val remainingCells = (7 - (totalCells % 7)) % 7
             if (remainingCells < 7) {
                 items(remainingCells) {
-                    Box(modifier = Modifier.aspectRatio(0.6f))
+                    Box(modifier = Modifier.aspectRatio(0.5f))
                 }
             }
         }
