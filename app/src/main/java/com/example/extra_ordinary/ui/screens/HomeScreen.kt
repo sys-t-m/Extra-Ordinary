@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -26,7 +28,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -99,9 +100,184 @@ fun HomeScreen(
         )
     }
 
-    Scaffold(
+    Surface(
         modifier = modifier.fillMaxSize(),
-        floatingActionButton = {
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .systemBarsPadding()
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                        }
+                    }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month")
+                    }
+                    Text(
+                        text = state.currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ITALIAN))
+                            .replaceFirstChar { it.uppercase() },
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { showDatePicker = true }
+                    )
+                    IconButton(onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                        }
+                    }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month")
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (state.moneyVisible) {
+                            val rateText = state.defaultRate?.let { (euros, cents) ->
+                                "${euros},${
+                                    String.format(
+                                        Locale.getDefault(),
+                                        "%02d",
+                                        cents
+                                    )
+                                }€"
+                            } ?: "0,00€"
+                            Text(
+                                text = rateText,
+                                modifier = Modifier.padding(end = 4.dp),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        IconButton(onClick = { showDefaultRateDialog = true }) {
+                            Icon(Icons.Filled.Edit, contentDescription = "Modifica paga oraria mensile")
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { viewModel.toggleMoneyVisibility() }) {
+                            Icon(
+                                if (state.moneyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = if (state.moneyVisible) "Hide money" else "Show money"
+                            )
+                        }
+                        Box {
+                            IconButton(onClick = { menuExpanded = true }) {
+                                Icon(Icons.Default.MoreVert, contentDescription = "More")
+                            }
+                            DropdownMenu(
+                                expanded = menuExpanded,
+                                onDismissRequest = { menuExpanded = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Importa Backup") },
+                                    onClick = {
+                                        menuExpanded = false
+                                        importLauncher.launch(arrayOf("*/*"))
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Download,
+                                            contentDescription = "Importa Backup"
+                                        )
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Esporta Backup") },
+                                    onClick = {
+                                        menuExpanded = false
+                                        val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+                                        val fileName =
+                                            "extraordinary_backup_${
+                                                LocalDate.now().format(formatter)
+                                            }.csv"
+                                        exportLauncher.launch(fileName)
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Upload,
+                                            contentDescription = "Esporta Backup"
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    shadowElevation = 4.dp
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp, horizontal = 16.dp),
+                        horizontalArrangement = if (state.moneyVisible) Arrangement.SpaceEvenly else Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Schedule, contentDescription = "Total Hours")
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = state.totalHoursFormatted,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        if (state.moneyVisible) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Wallet, contentDescription = "Total Income")
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = state.totalIncomeFormatted,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        }
+                    }
+                }
+
+                HorizontalPager(
+                    state = pagerState,
+                    pageSpacing = 16.dp,
+                    modifier = Modifier.weight(1f)
+                ) { page ->
+                    val monthOffset = page - initialPage
+                    val yearMonth = YearMonth.now().plusMonths(monthOffset.toLong())
+                    CalendarView(
+                        yearMonth = yearMonth,
+                        moneyVisible = state.moneyVisible,
+                        showDefaultRateDialog = showDefaultRateDialog,
+                        defaultRate = state.defaultRate,
+                        dayNumbers = state.currentMonthData,
+                        onDismissDefaultRateDialog = { showDefaultRateDialog = false },
+                        onDefaultRateConfirm = { euros, cents ->
+                            viewModel.updateMonthlyRate(euros, cents)
+                            showDefaultRateDialog = false
+                        },
+                        onDataRefresh = { viewModel.loadDataForMonth(yearMonth) },
+                        onUpdateDailyEntry = { day, hours, minutes, euros, cents ->
+                            viewModel.updateDailyEntry(day, hours, minutes, euros, cents)
+                        }
+                    )
+                }
+            }
+
             if (state.currentMonth != YearMonth.now()) {
                 FloatingActionButton(
                     onClick = {
@@ -113,184 +289,15 @@ fun HomeScreen(
                             pagerState.animateScrollToPage(pagerState.currentPage + diff.toInt())
                         }
                     },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                        .navigationBarsPadding(),
                     containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = MaterialTheme.colorScheme.onSurface
                 ) {
                     Icon(Icons.Default.PushPin, contentDescription = "Back to Today")
                 }
-            }
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                    }
-                }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month")
-                }
-                Text(
-                    text = state.currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ITALIAN))
-                        .replaceFirstChar { it.uppercase() },
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { showDatePicker = true }
-                )
-                IconButton(onClick = {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                    }
-                }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month")
-                }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (state.moneyVisible) {
-                        val rateText = state.defaultRate?.let { (euros, cents) ->
-                            "${euros},${
-                                String.format(
-                                    Locale.getDefault(),
-                                    "%02d",
-                                    cents
-                                )
-                            }€"
-                        } ?: "0,00€"
-                        Text(
-                            text = rateText,
-                            modifier = Modifier.padding(end = 4.dp),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    IconButton(onClick = { showDefaultRateDialog = true }) {
-                        Icon(Icons.Filled.Edit, contentDescription = "Modifica paga oraria mensile")
-                    }
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { viewModel.toggleMoneyVisibility() }) {
-                        Icon(
-                            if (state.moneyVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = if (state.moneyVisible) "Hide money" else "Show money"
-                        )
-                    }
-                    Box {
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "More")
-                        }
-                        DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Importa Backup") },
-                                onClick = {
-                                    menuExpanded = false
-                                    importLauncher.launch(arrayOf("*/*"))
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Download,
-                                        contentDescription = "Importa Backup"
-                                    )
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Esporta Backup") },
-                                onClick = {
-                                    menuExpanded = false
-                                    val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-                                    val fileName =
-                                        "extraordinary_backup_${
-                                            LocalDate.now().format(formatter)
-                                        }.csv"
-                                    exportLauncher.launch(fileName)
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Upload,
-                                        contentDescription = "Esporta Backup"
-                                    )
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-            Surface(
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                shadowElevation = 4.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp, horizontal = 16.dp),
-                    horizontalArrangement = if (state.moneyVisible) Arrangement.SpaceEvenly else Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Schedule, contentDescription = "Total Hours")
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = state.totalHoursFormatted,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                    if (state.moneyVisible) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Wallet, contentDescription = "Total Income")
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = state.totalIncomeFormatted,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                    }
-                }
-            }
-
-            HorizontalPager(
-                state = pagerState,
-                pageSpacing = 16.dp,
-                modifier = Modifier.weight(1f)
-            ) { page ->
-                val monthOffset = page - initialPage
-                val yearMonth = YearMonth.now().plusMonths(monthOffset.toLong())
-                CalendarView(
-                    yearMonth = yearMonth,
-                    moneyVisible = state.moneyVisible,
-                    showDefaultRateDialog = showDefaultRateDialog,
-                    defaultRate = state.defaultRate,
-                    dayNumbers = state.currentMonthData,
-                    onDismissDefaultRateDialog = { showDefaultRateDialog = false },
-                    onDefaultRateConfirm = { euros, cents ->
-                        viewModel.updateMonthlyRate(euros, cents)
-                        showDefaultRateDialog = false
-                    },
-                    onDataRefresh = { viewModel.loadDataForMonth(yearMonth) },
-                    onUpdateDailyEntry = { day, hours, minutes, euros, cents ->
-                        viewModel.updateDailyEntry(day, hours, minutes, euros, cents)
-                    }
-                )
             }
         }
     }
