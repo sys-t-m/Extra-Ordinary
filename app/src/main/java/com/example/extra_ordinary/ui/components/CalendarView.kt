@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -104,9 +105,10 @@ fun CalendarView(
         }
         Spacer(modifier = Modifier.height(16.dp))
 
+        val borderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
         LazyVerticalGrid(
             columns = GridCells.Fixed(7),
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxWidth()
         ) {
             val emptyCells = (firstDayOfMonth.value - 1 + 7) % 7
             items(emptyCells) {
@@ -122,10 +124,7 @@ fun CalendarView(
                 Box(
                     modifier = Modifier
                         .aspectRatio(0.55f)
-                        .border(
-                            0.5.dp,
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        )
+                        .border(0.5.dp, borderColor)
                         .then(if (isToday) Modifier.border(2.dp, MaterialTheme.colorScheme.onSurface) else Modifier)
                         .clickable {
                             selectedDay = dayOfMonth
@@ -200,6 +199,13 @@ fun CalendarView(
                             )
                         }
                     }
+                }
+            }
+            val totalCells = emptyCells + daysInMonth
+            val remainingCells = (7 - (totalCells % 7)) % 7
+            if (remainingCells < 7) {
+                items(remainingCells) {
+                    Box(modifier = Modifier.aspectRatio(0.55f))
                 }
             }
         }
